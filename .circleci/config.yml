@@ -10,4 +10,4 @@ jobs:
       - run: flutter -v build apk
       - store_artifacts:
           path: build/app/outputs/apk/release/app-release.apk
-          destination: artifact-file
+          destination: flutter_zero_to_one.apk
