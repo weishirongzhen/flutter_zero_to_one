@@ -1,7 +1,7 @@
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_zero_to_one/entities/access_token_entity.dart';
-import 'package:flutter_zero_to_one/entities/image_entity.dart';
+import 'package:flutter_zero_to_one/entities/result_entity.dart';
 import 'package:flutter_zero_to_one/entities/serializers.dart';
 import 'package:flutter_zero_to_one/http/http_base.dart';
 import 'package:flutter_zero_to_one/wtf_bus.dart';
@@ -25,38 +25,17 @@ class HttpService {
     return serialize(AccessTokenEntity.serializer, response);
   }
 
-  ///黑白图像上色
-  static Future<ImageEntity> colourize(String accessToken, String image) async {
-    Response response =
-        await HttpBase().post(ApiAddress.baiDuApiAddress, '${ApiAddress.colourize}?access_token=$accessToken', data: {'image': image}, options: Options(contentType: Headers.formUrlEncodedContentType));
-    return serialize(ImageEntity.serializer, response);
+  ///植物识别
+  static Future<ResultEntity> plant(String accessToken, String image, int baikeNum) async {
+    Response response = await HttpBase().post(ApiAddress.baiDuApiAddress, '${ApiAddress.plant}?access_token=$accessToken',
+        data: {'image': image, 'baike_num': baikeNum}, options: Options(contentType: Headers.formUrlEncodedContentType));
+    return serialize(ResultEntity.serializer, response);
   }
 
-  ///图像无损放大
-  static Future<ImageEntity> imageQualityEnhance(String accessToken, String image) async {
+  ///动物识别
+  static Future<ResultEntity> animal(String accessToken, String image) async {
     Response response =
-    await HttpBase().post(ApiAddress.baiDuApiAddress, '${ApiAddress.image_quality_enhance}?access_token=$accessToken', data: {'image': image}, options: Options(contentType: Headers.formUrlEncodedContentType));
-    return serialize(ImageEntity.serializer, response);
-  }
-
-  ///图像去雾
-  static Future<ImageEntity> dehaze(String accessToken, String image) async {
-    Response response =
-    await HttpBase().post(ApiAddress.baiDuApiAddress, '${ApiAddress.dehaze}?access_token=$accessToken', data: {'image': image}, options: Options(contentType: Headers.formUrlEncodedContentType));
-    return serialize(ImageEntity.serializer, response);
-  }
-
-  ///图像对比度增强
-  static Future<ImageEntity> contrastEnhance(String accessToken, String image) async {
-    Response response =
-    await HttpBase().post(ApiAddress.baiDuApiAddress, '${ApiAddress.contrast_enhance}?access_token=$accessToken', data: {'image': image}, options: Options(contentType: Headers.formUrlEncodedContentType));
-    return serialize(ImageEntity.serializer, response);
-  }
-
-  ///图像拉伸恢复
-  static Future<ImageEntity> stretchRestore(String accessToken, String image) async {
-    Response response =
-    await HttpBase().post(ApiAddress.baiDuApiAddress, '${ApiAddress.stretch_restore}?access_token=$accessToken', data: {'image': image}, options: Options(contentType: Headers.formUrlEncodedContentType));
-    return serialize(ImageEntity.serializer, response);
+        await HttpBase().post(ApiAddress.baiDuApiAddress, '${ApiAddress.animal}?access_token=$accessToken', data: {'image': image}, options: Options(contentType: Headers.formUrlEncodedContentType));
+    return serialize(ResultEntity.serializer, response);
   }
 }

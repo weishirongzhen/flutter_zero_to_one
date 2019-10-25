@@ -5,13 +5,13 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_zero_to_one/entities/access_token_entity.dart';
-import 'package:flutter_zero_to_one/entities/image_entity.dart';
+import 'package:flutter_zero_to_one/entities/result_entity.dart';
 import 'package:flutter_zero_to_one/http/http_request.dart';
 
 class Utils {
   ///文件转base64编码
-  static String imageFileToBase64(File image) {
-    return Base64Encoder().convert(image.readAsBytesSync());
+  static String imageFileToBase64(List<int> image) {
+    return Base64Encoder().convert(image);
   }
 
   ///base64编码转Image Widget
@@ -33,35 +33,15 @@ class Utils {
     return map;
   }
 
-  ///黑白图像上色
-  static Future<Image> colorize(String base64, String accessToken) async {
-    ImageEntity result = await HttpService.colourize(accessToken, base64);
-    return base64ToImage(result.image);
+  ///植物识别
+  static Future<ResultEntity> plant(String base64, int baikeNum, String accessToken) async {
+    ResultEntity result = await HttpService.plant(accessToken, base64, baikeNum);
+    return result;
   }
 
-  ///图像无损放大
-  static Future<Image> imageQualityEnhance(String base64, String accessToken) async {
-    ImageEntity result = await HttpService.imageQualityEnhance(accessToken, base64);
-    return base64ToImage(result.image);
+  ///动物识别
+  static Future<ResultEntity> animal(String base64, String accessToken) async {
+    var result = await HttpService.animal(accessToken, base64);
+    return result;
   }
-
-  ///图像去雾
-  static Future<Image> dehaze(String base64, String accessToken) async {
-    ImageEntity result = await HttpService.dehaze(accessToken, base64);
-    return base64ToImage(result.image);
-  }
-
-  ///图像对比度增强
-  static Future<Image> contrastEnhance(String base64, String accessToken) async {
-    ImageEntity result = await HttpService.contrastEnhance(accessToken, base64);
-    return Utils.base64ToImage(result.image);
-  }
-
-  ///拉伸图像恢复
-  static Future<Image> stretchRestore(String base64, String accessToken) async {
-    ImageEntity result = await HttpService.stretchRestore(accessToken, base64);
-    return base64ToImage(result.image);
-  }
-
-
 }
