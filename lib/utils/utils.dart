@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_zero_to_one/entities/access_token_entity.dart';
 import 'package:flutter_zero_to_one/entities/result_entity.dart';
 import 'package:flutter_zero_to_one/http/http_request.dart';
+import 'package:flutter_zero_to_one/utils/user_default.dart';
 
 class Utils {
   ///文件转base64编码
@@ -20,10 +20,13 @@ class Utils {
   }
 
   ///获取接口访问token
-  static Future<AccessTokenEntity> getAccessToken() async {
+  static void initialAPIAccessToken() async {
     String apiKey = (await Utils.getBaiDuKeys())['api_key'];
     String secretKeys = (await Utils.getBaiDuKeys())['secret_key'];
-    return HttpService.getAccessToken(apiKey, secretKeys);
+    AccessTokenEntity accessTokenEntity = await HttpService.getAccessToken(apiKey, secretKeys);
+    if (accessTokenEntity != null) {
+      UserDefault.saveToken(accessTokenEntity.accessToken);
+    }
   }
 
   ///获取私有keys
@@ -33,6 +36,13 @@ class Utils {
     return map;
   }
 
+//  ///保存到文件
+//  static void saveImageFile(String name, ) async{
+//    final directory = await getApplicationDocumentsDirectory();
+//    File file = File("${directory.path}/$name.jpg");
+//    file.
+//  }
+
   ///植物识别
   static Future<ResultEntity> plant(String base64, int baikeNum, String accessToken) async {
     ResultEntity result = await HttpService.plant(accessToken, base64, baikeNum);
@@ -40,8 +50,8 @@ class Utils {
   }
 
   ///动物识别
-  static Future<ResultEntity> animal(String base64, String accessToken) async {
-    var result = await HttpService.animal(accessToken, base64);
+  static Future<ResultEntity> animal(String base64, int baikeNum, String accessToken) async {
+    var result = await HttpService.animal(accessToken, base64, baikeNum);
     return result;
   }
 }

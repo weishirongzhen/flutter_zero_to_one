@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_zero_to_one/notifier/history_notifier.dart';
 import 'package:flutter_zero_to_one/ui/home_screen.dart';
 import 'package:flutter_zero_to_one/utils/user_default.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,14 +16,18 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(builder: (_) => HistoryNotifier()),
+      ],
+      child: MaterialApp(
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+        ),
+        home: HomeScreen(),
       ),
-      home: HomeScreen(),
     );
   }
 }

@@ -9,8 +9,13 @@ part of serializers;
 Serializers _$serializers = (new Serializers().toBuilder()
       ..add(AccessTokenEntity.serializer)
       ..add(BaiKeInfo.serializer)
+      ..add(HistoryEntity.serializer)
+      ..add(HistoryItem.serializer)
       ..add(Result.serializer)
       ..add(ResultEntity.serializer)
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(HistoryItem)]),
+          () => new ListBuilder<HistoryItem>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Result)]),
           () => new ListBuilder<Result>()))

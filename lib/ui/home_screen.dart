@@ -1,14 +1,18 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_zero_to_one/entities/access_token_entity.dart';
-import 'package:flutter_zero_to_one/entities/result_entity.dart';
-import 'package:flutter_zero_to_one/ui/description_widget.dart';
-import 'package:flutter_zero_to_one/ui/title_widget.dart';
-import 'package:flutter_zero_to_one/utils/user_default.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_zero_to_one/image_type.dart';
+import 'package:flutter_zero_to_one/notifier/history_notifier.dart';
+import 'package:flutter_zero_to_one/ui/history/history_page.dart';
+import 'package:flutter_zero_to_one/ui/recognize_page.dart';
 import 'package:flutter_zero_to_one/utils/utils.dart';
+import 'package:flutter_zero_to_one/wtf_bus.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,115 +20,70 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  File _imageFile;
-  String _imageBase64;
-  Future<ResultEntity> _result;
-
+class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
   @override
   void initState() {
-    getToken();
+    Utils.initialAPIAccessToken();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<HistoryNotifier>(context).initHistory();
+    });
     super.initState();
   }
 
-  void getToken() async {
-    if ((await UserDefault.getToken())?.isEmpty ?? true) {
-      AccessTokenEntity token = await Utils.getAccessToken();
-      UserDefault.saveToken(token.accessToken);
+  Future<void> _getImage(ImageSource source, ImageType type) async {
+    final File imageFile = await ImagePicker.pickImage(source: source);
+
+    if (imageFile != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => RecognizePage(imageFile, type)));
     }
   }
 
-  Future<void> getImage() async {
-    _imageFile = await ImagePicker.pickImage(source: ImageSource.gallery);
-
-    if (_imageFile != null) {
-      setState(() {
-        _result = null;
-      });
-      _imageBase64 = Utils.imageFileToBase64(_imageFile.readAsBytesSync());
-      final String accessToken = await UserDefault.getToken();
-      _result = Utils.plant(_imageBase64, 10, accessToken);
-    }
-  }
-
-  Widget _buildResultView() {
-    return FutureBuilder<ResultEntity>(
-        future: _result,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: snapshot.data.result.length,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  return _buildResultItemWithDescription(snapshot.data.result[index]);
-                });
-          } else {
-            return SizedBox();
-          }
-        });
-  }
-
-  Widget _buildOtherResultView() {
-    return FutureBuilder<ResultEntity>(
-        future: _result,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return Column(
-              children: <Widget>[
-                Text(
-                  '其他可能',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.black,
-                  ),
-                ),
-                ListView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: snapshot.data.result.length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return _buildResultItemWithoutDescription(snapshot.data.result[index]);
-                    }),
-              ],
-            );
-          } else {
-            return SizedBox();
-          }
-        });
-  }
-
-  Widget _buildResult() {
-    return Column(
-      children: <Widget>[_buildResultView(), _buildOtherResultView()],
-      mainAxisSize: MainAxisSize.min,
-    );
-  }
-
-  Widget _buildResultItemWithoutDescription(Result result) {
-    if (result.baiKeInfo == null || result.baiKeInfo?.description == null) {
-      return TitleWidget(result.score, result.name);
-    } else {
-      return SizedBox();
-    }
-  }
-
-  Widget _buildResultItemWithDescription(Result result) {
-    if (result.baiKeInfo != null && result.baiKeInfo.description != null) {
-      return Container(
-        child: Column(
-          children: <Widget>[
-            SizedBox(
-              height: 20,
+  Future<ImageSource> _showDialog(BuildContext context, ImageType type) async {
+    return showCupertinoModalPopup<ImageSource>(
+        context: context,
+        builder: (context) {
+          return CupertinoActionSheet(
+            cancelButton: CupertinoActionSheetAction(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("取消")),
+            title: Text(
+              type == ImageType.plant ? "选择植物" : "选择动物",
+              style: TextStyle(fontSize: 20),
             ),
-            TitleWidget(result.score, result.name),
-            DescriptionWidget(result.baiKeInfo),
-          ],
-        ),
-      );
-    } else {
-      return SizedBox();
-    }
+            actions: <Widget>[
+              CupertinoActionSheetAction(
+                  onPressed: () {
+                    Navigator.pop(context, ImageSource.camera);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(FontAwesomeIcons.camera),
+                      SizedBox(
+                        width: 18,
+                      ),
+                      Text('拍照'),
+                    ],
+                  )),
+              CupertinoActionSheetAction(
+                  onPressed: () {
+                    Navigator.pop(context, ImageSource.gallery);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(FontAwesomeIcons.images),
+                      SizedBox(
+                        width: 18,
+                      ),
+                      Text('相册'),
+                    ],
+                  )),
+            ],
+          );
+        });
   }
 
   @override
@@ -134,15 +93,14 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
         title: Text(
           '我的动植物园',
-          style: TextStyle(color: Colors.black, fontSize: 20),
+          style: TextStyle(color: Colors.white, fontSize: 20),
         ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
         actions: <Widget>[
           IconButton(
+            tooltip: '分享',
             icon: Icon(
-              Icons.share,
-              color: Colors.black,
+              Icons.more_vert,
+              color: Colors.white,
             ),
             onPressed: () {
               Share.share('你好');
@@ -150,54 +108,67 @@ class _HomeScreenState extends State<HomeScreen> {
           )
         ],
       ),
-      body: Scaffold(
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.only(bottom: 30),
-          child: FloatingActionButton(
-            child: Icon(Icons.photo_camera),
-            onPressed: () {
-              getImage();
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: SpeedDial(
+        marginBottom: 30,
+        marginRight: 30,
+        child: Icon(FontAwesomeIcons.bars),
+        curve: Curves.bounceIn,
+        overlayOpacity: 0.4,
+        animatedIcon: AnimatedIcons.menu_close,
+        children: [
+          SpeedDialChild(
+            child: Icon(FontAwesomeIcons.cat),
+            backgroundColor: Colors.blue,
+            label: '识别动物',
+            labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () async {
+              _getImage(await _showDialog(context, ImageType.animal), ImageType.animal);
             },
           ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                SizedBox(
-                  height: 20,
-                ),
-                _imageFile == null
-                    ? Container(
-                        width: double.infinity,
-                        child: Text(
-                          '您还没有识别过动植物哦，快去识别吧',
-                          style: TextStyle(fontSize: 20, color: Colors.black87),
-                        ),
-                      )
-                    : Container(
-                        width: double.infinity,
-                        height: 300,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(
-                            _imageFile,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                _result == null ? SizedBox() : _buildResult(),
-                SizedBox(
-                  height: 80,
-                )
-              ],
-            ),
+          SpeedDialChild(
+            child: Icon(FontAwesomeIcons.leaf),
+            backgroundColor: Colors.green,
+            label: '识别植物',
+            labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () async {
+              _getImage(await _showDialog(context, ImageType.plant), ImageType.plant);
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              SizedBox(
+                height: 20,
+              ),
+              Container(
+                child: HistoryPage(),
+              ),
+              SizedBox(
+                height: 80,
+              )
+            ],
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    WtfBus().destroy();
+    super.dispose();
+  }
+
+  @override
+  void onEvent(Event event) {
+    if (event.body is DioError) {
+      print('网络错误，或请求错误');
+    }
   }
 }

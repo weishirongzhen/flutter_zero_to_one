@@ -11,11 +11,24 @@ import 'api_address.dart';
 class HttpService {
   static T serialize<T>(Serializer<T> serializer, Response response) {
     if (response != null) {
-      WtfBus().postEvent(standardSerializers.deserializeWith(serializer, response.data));
-      return standardSerializers.deserializeWith(serializer, response.data);
+      ///发送事件流，如需要可监听
+      WtfBus().postEvent(standardSerializers.deserializeWith(serializer, handleApiWrongResponse(response).data));
+      return standardSerializers.deserializeWith(serializer, handleApiWrongResponse(response).data);
     } else {
       return null;
     }
+  }
+
+  ///处理百度两个api返回字段不一致的问题，官方文档中虽然说明score返回值都为uint32，但是实际上在animal中，score返回为String
+  static Response handleApiWrongResponse(Response response) {
+    if (response?.data['result'] != null) {
+      response.data['result']?.forEach((item) {
+        if (item['score'] != null) {
+          item['score'] = double.parse(item['score'].toString());
+        }
+      });
+    }
+    return response;
   }
 
   ///获取百度Api accessToken
@@ -33,9 +46,9 @@ class HttpService {
   }
 
   ///动物识别
-  static Future<ResultEntity> animal(String accessToken, String image) async {
-    Response response =
-        await HttpBase().post(ApiAddress.baiDuApiAddress, '${ApiAddress.animal}?access_token=$accessToken', data: {'image': image}, options: Options(contentType: Headers.formUrlEncodedContentType));
+  static Future<ResultEntity> animal(String accessToken, String image, int baikeNum) async {
+    Response response = await HttpBase().post(ApiAddress.baiDuApiAddress, '${ApiAddress.animal}?access_token=$accessToken',
+        data: {'image': image, 'baike_num': baikeNum}, options: Options(contentType: Headers.formUrlEncodedContentType));
     return serialize(ResultEntity.serializer, response);
   }
 }
