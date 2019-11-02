@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_zero_to_one/entities/history_entity.dart';
 import 'package:flutter_zero_to_one/entities/result_entity.dart';
 import 'package:flutter_zero_to_one/image_type.dart';
-import 'package:flutter_zero_to_one/ui/description_widget.dart';
+import 'package:flutter_zero_to_one/notifier/history_notifier.dart';
 import 'package:flutter_zero_to_one/ui/title_widget.dart';
 import 'package:flutter_zero_to_one/utils/user_default.dart';
 import 'package:flutter_zero_to_one/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class RecognizePage extends StatefulWidget {
   final File _imageFile;
@@ -20,11 +22,45 @@ class RecognizePage extends StatefulWidget {
 
 class _RecognizePageState extends State<RecognizePage> {
   Future<ResultEntity> _result;
+  bool _isRecognizing = true;
 
   @override
   void initState() {
     _result = _initialRecognize(widget._imageFile, widget.imageType);
+    _initHistorySaving();
     super.initState();
+  }
+
+  void _initHistorySaving() async {
+    String imagePath;
+    _result.asStream().listen((onData) async {
+      setState(() {
+        _isRecognizing = false;
+      });
+      if (onData != null) {
+        if (onData.result[0].name != null) {
+          imagePath = await Utils.saveImageFile(onData.result[0].name, widget._imageFile.readAsBytesSync());
+        }
+        if (onData.result != null) {
+          HistoryItem historyItem = HistoryItem((update) => update
+            ..title = onData.result[0].name
+            ..imagePath = imagePath
+            ..result.addAll(onData.result.map((data) {
+              return ItemInfo((item) => item
+                ..name = data.name
+                ..score = data.score
+                ..description = data.baiKeInfo?.description ?? '暂无描述信息');
+            }).toList()));
+          if (historyItem.title != '非植物' && historyItem.title != '非动物') {
+            UserDefault.saveHistory(historyItem);
+
+            ///延迟100ms 刷新上层历史界面
+            await Future.delayed(Duration(milliseconds: 100));
+            Provider.of<HistoryNotifier>(context).initHistory();
+          }
+        }
+      }
+    });
   }
 
   @override
@@ -38,8 +74,7 @@ class _RecognizePageState extends State<RecognizePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               _buildPreview(widget._imageFile),
-              _buildResultView(),
-              _buildOtherResultView(),
+              _buildRecognizeResult(),
             ],
             mainAxisSize: MainAxisSize.min,
           ),
@@ -71,22 +106,30 @@ class _RecognizePageState extends State<RecognizePage> {
                 fit: BoxFit.cover,
                 image: FileImage(image),
               )),
+          child: _isRecognizing
+              ? CircularProgressIndicator(
+                  strokeWidth: 10,
+                )
+              : SizedBox(),
         ),
       ),
     );
   }
 
-  Widget _buildResultView() {
+  Widget _buildRecognizeResult() {
     return FutureBuilder<ResultEntity>(
         future: _result,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return ListView.builder(
+            return ListView.separated(
+                separatorBuilder: (BuildContext context, int index) => Divider(
+                      height: 4,
+                    ),
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: snapshot.data.result.length,
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  return _buildResultItemWithDescription(snapshot.data.result[index]);
+                  return _buildDescription(snapshot.data.result[index]);
                 });
           } else {
             return SizedBox();
@@ -94,58 +137,30 @@ class _RecognizePageState extends State<RecognizePage> {
         });
   }
 
-  Widget _buildOtherResultView() {
-    return FutureBuilder<ResultEntity>(
-        future: _result,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return Column(
-              children: <Widget>[
-                Text(
-                  '其他可能',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.black,
-                  ),
-                ),
-                ListView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: snapshot.data.result.length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return _buildResultItemWithoutDescription(snapshot.data.result[index]);
-                    }),
-              ],
-            );
-          } else {
-            return SizedBox();
-          }
-        });
-  }
-
-  Widget _buildResultItemWithoutDescription(Result result) {
+  Widget _buildDescription(Result result) {
     if (result.baiKeInfo == null || result.baiKeInfo?.description == null) {
-      return TitleWidget(result.score, result.name);
-    } else {
-      return SizedBox();
-    }
-  }
-
-  Widget _buildResultItemWithDescription(Result result) {
-    if (result.baiKeInfo != null && result.baiKeInfo.description != null) {
-      return Container(
-        child: Column(
-          children: <Widget>[
-            SizedBox(
-              height: 20,
-            ),
-            TitleWidget(result.score, result.name),
-            DescriptionWidget(result.baiKeInfo),
-          ],
-        ),
+      return Column(
+        children: <Widget>[
+          TitleWidget(result.score, result.name),
+          Text(
+            '暂无描述信息',
+            style: TextStyle(fontSize: 18, color: Colors.black87),
+          ),
+        ],
       );
     } else {
-      return SizedBox();
+      return Column(
+        children: <Widget>[
+          TitleWidget(result.score, result.name),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Text(
+              result.baiKeInfo.description,
+              style: TextStyle(fontSize: 18, color: Colors.black87),
+            ),
+          ),
+        ],
+      );
     }
   }
 }

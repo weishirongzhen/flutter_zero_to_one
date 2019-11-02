@@ -20,7 +20,7 @@ class HistoryPage extends StatelessWidget {
               crossAxisSpacing: 15,
             ),
             itemBuilder: (context, index) {
-              return HistoryItemWidget(snapshot.entity.list[index]);
+              return HistoryItemWidget(snapshot.entity.list[index], index);
             },
           );
         } else {

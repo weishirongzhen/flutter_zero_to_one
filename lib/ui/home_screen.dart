@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_zero_to_one/image_type.dart';
 import 'package:flutter_zero_to_one/notifier/history_notifier.dart';
+import 'package:flutter_zero_to_one/ui/about_page.dart';
 import 'package:flutter_zero_to_one/ui/history/history_page.dart';
 import 'package:flutter_zero_to_one/ui/recognize_page.dart';
 import 'package:flutter_zero_to_one/utils/utils.dart';
@@ -13,7 +14,8 @@ import 'package:flutter_zero_to_one/wtf_bus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:share/share.dart';
+
+enum WhyFarther { harder, smarter, selfStarter, tradingCharter }
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -31,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
   }
 
   Future<void> _getImage(ImageSource source, ImageType type) async {
-    final File imageFile = await ImagePicker.pickImage(source: source);
+    final File imageFile = await ImagePicker.pickImage(source: source, maxWidth: 800, maxHeight: 800);
 
     if (imageFile != null) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => RecognizePage(imageFile, type)));
@@ -97,13 +99,12 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
         ),
         actions: <Widget>[
           IconButton(
-            tooltip: '分享',
             icon: Icon(
-              Icons.more_vert,
+              FontAwesomeIcons.infoCircle,
               color: Colors.white,
             ),
             onPressed: () {
-              Share.share('你好');
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AboutPage()));
             },
           )
         ],
@@ -167,8 +168,6 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
 
   @override
   void onEvent(Event event) {
-    if (event.body is DioError) {
-      print('网络错误，或请求错误');
-    }
+    if (event.body is DioError) {}
   }
 }

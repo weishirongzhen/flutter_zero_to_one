@@ -32,13 +32,13 @@ abstract class HistoryItem implements Built<HistoryItem, HistoryItemBuilder> {
   HistoryItem._();
 
   @nullable
-  String get name;
-
-  @nullable
-  String get description;
+  String get title;
 
   @nullable
   String get imagePath;
+
+  @nullable
+  BuiltList<ItemInfo> get result;
 
   factory HistoryItem([void Function(HistoryItemBuilder) updates]) = _$HistoryItem;
 
@@ -47,6 +47,31 @@ abstract class HistoryItem implements Built<HistoryItem, HistoryItemBuilder> {
   }
 
   static HistoryItem fromJson(String jsonString) {
+    return standardSerializers.deserializeWith(serializer, jsonDecode(jsonString));
+  }
+}
+
+abstract class ItemInfo implements Built<ItemInfo, ItemInfoBuilder> {
+  static Serializer<ItemInfo> get serializer => _$itemInfoSerializer;
+
+  ItemInfo._();
+
+  @nullable
+  String get name;
+
+  @nullable
+  num get score;
+
+  @nullable
+  String get description;
+
+  factory ItemInfo([void Function(ItemInfoBuilder) updates]) = _$ItemInfo;
+
+  String toJson() {
+    return jsonEncode(standardSerializers.serializeWith(serializer, this));
+  }
+
+  static ItemInfo fromJson(String jsonString) {
     return standardSerializers.deserializeWith(serializer, jsonDecode(jsonString));
   }
 }

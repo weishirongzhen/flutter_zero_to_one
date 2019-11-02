@@ -9,6 +9,7 @@ part of 'history_entity.dart';
 Serializer<HistoryEntity> _$historyEntitySerializer =
     new _$HistoryEntitySerializer();
 Serializer<HistoryItem> _$historyItemSerializer = new _$HistoryItemSerializer();
+Serializer<ItemInfo> _$itemInfoSerializer = new _$ItemInfoSerializer();
 
 class _$HistoryEntitySerializer implements StructuredSerializer<HistoryEntity> {
   @override
@@ -65,16 +66,10 @@ class _$HistoryItemSerializer implements StructuredSerializer<HistoryItem> {
   Iterable<Object> serialize(Serializers serializers, HistoryItem object,
       {FullType specifiedType = FullType.unspecified}) {
     final result = <Object>[];
-    if (object.name != null) {
+    if (object.title != null) {
       result
-        ..add('name')
-        ..add(serializers.serialize(object.name,
-            specifiedType: const FullType(String)));
-    }
-    if (object.description != null) {
-      result
-        ..add('description')
-        ..add(serializers.serialize(object.description,
+        ..add('title')
+        ..add(serializers.serialize(object.title,
             specifiedType: const FullType(String)));
     }
     if (object.imagePath != null) {
@@ -82,6 +77,13 @@ class _$HistoryItemSerializer implements StructuredSerializer<HistoryItem> {
         ..add('imagePath')
         ..add(serializers.serialize(object.imagePath,
             specifiedType: const FullType(String)));
+    }
+    if (object.result != null) {
+      result
+        ..add('result')
+        ..add(serializers.serialize(object.result,
+            specifiedType:
+                const FullType(BuiltList, const [const FullType(ItemInfo)])));
     }
     return result;
   }
@@ -97,16 +99,79 @@ class _$HistoryItemSerializer implements StructuredSerializer<HistoryItem> {
       iterator.moveNext();
       final dynamic value = iterator.current;
       switch (key) {
-        case 'name':
-          result.name = serializers.deserialize(value,
-              specifiedType: const FullType(String)) as String;
-          break;
-        case 'description':
-          result.description = serializers.deserialize(value,
+        case 'title':
+          result.title = serializers.deserialize(value,
               specifiedType: const FullType(String)) as String;
           break;
         case 'imagePath':
           result.imagePath = serializers.deserialize(value,
+              specifiedType: const FullType(String)) as String;
+          break;
+        case 'result':
+          result.result.replace(serializers.deserialize(value,
+                  specifiedType: const FullType(
+                      BuiltList, const [const FullType(ItemInfo)]))
+              as BuiltList<dynamic>);
+          break;
+      }
+    }
+
+    return result.build();
+  }
+}
+
+class _$ItemInfoSerializer implements StructuredSerializer<ItemInfo> {
+  @override
+  final Iterable<Type> types = const [ItemInfo, _$ItemInfo];
+  @override
+  final String wireName = 'ItemInfo';
+
+  @override
+  Iterable<Object> serialize(Serializers serializers, ItemInfo object,
+      {FullType specifiedType = FullType.unspecified}) {
+    final result = <Object>[];
+    if (object.name != null) {
+      result
+        ..add('name')
+        ..add(serializers.serialize(object.name,
+            specifiedType: const FullType(String)));
+    }
+    if (object.score != null) {
+      result
+        ..add('score')
+        ..add(serializers.serialize(object.score,
+            specifiedType: const FullType(num)));
+    }
+    if (object.description != null) {
+      result
+        ..add('description')
+        ..add(serializers.serialize(object.description,
+            specifiedType: const FullType(String)));
+    }
+    return result;
+  }
+
+  @override
+  ItemInfo deserialize(Serializers serializers, Iterable<Object> serialized,
+      {FullType specifiedType = FullType.unspecified}) {
+    final result = new ItemInfoBuilder();
+
+    final iterator = serialized.iterator;
+    while (iterator.moveNext()) {
+      final key = iterator.current as String;
+      iterator.moveNext();
+      final dynamic value = iterator.current;
+      switch (key) {
+        case 'name':
+          result.name = serializers.deserialize(value,
+              specifiedType: const FullType(String)) as String;
+          break;
+        case 'score':
+          result.score = serializers.deserialize(value,
+              specifiedType: const FullType(num)) as num;
+          break;
+        case 'description':
+          result.description = serializers.deserialize(value,
               specifiedType: const FullType(String)) as String;
           break;
       }
@@ -205,16 +270,16 @@ class HistoryEntityBuilder
 
 class _$HistoryItem extends HistoryItem {
   @override
-  final String name;
-  @override
-  final String description;
+  final String title;
   @override
   final String imagePath;
+  @override
+  final BuiltList<ItemInfo> result;
 
   factory _$HistoryItem([void Function(HistoryItemBuilder) updates]) =>
       (new HistoryItemBuilder()..update(updates)).build();
 
-  _$HistoryItem._({this.name, this.description, this.imagePath}) : super._();
+  _$HistoryItem._({this.title, this.imagePath, this.result}) : super._();
 
   @override
   HistoryItem rebuild(void Function(HistoryItemBuilder) updates) =>
@@ -227,23 +292,23 @@ class _$HistoryItem extends HistoryItem {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is HistoryItem &&
-        name == other.name &&
-        description == other.description &&
-        imagePath == other.imagePath;
+        title == other.title &&
+        imagePath == other.imagePath &&
+        result == other.result;
   }
 
   @override
   int get hashCode {
-    return $jf($jc(
-        $jc($jc(0, name.hashCode), description.hashCode), imagePath.hashCode));
+    return $jf(
+        $jc($jc($jc(0, title.hashCode), imagePath.hashCode), result.hashCode));
   }
 
   @override
   String toString() {
     return (newBuiltValueToStringHelper('HistoryItem')
-          ..add('name', name)
-          ..add('description', description)
-          ..add('imagePath', imagePath))
+          ..add('title', title)
+          ..add('imagePath', imagePath)
+          ..add('result', result))
         .toString();
   }
 }
@@ -251,25 +316,26 @@ class _$HistoryItem extends HistoryItem {
 class HistoryItemBuilder implements Builder<HistoryItem, HistoryItemBuilder> {
   _$HistoryItem _$v;
 
-  String _name;
-  String get name => _$this._name;
-  set name(String name) => _$this._name = name;
-
-  String _description;
-  String get description => _$this._description;
-  set description(String description) => _$this._description = description;
+  String _title;
+  String get title => _$this._title;
+  set title(String title) => _$this._title = title;
 
   String _imagePath;
   String get imagePath => _$this._imagePath;
   set imagePath(String imagePath) => _$this._imagePath = imagePath;
 
+  ListBuilder<ItemInfo> _result;
+  ListBuilder<ItemInfo> get result =>
+      _$this._result ??= new ListBuilder<ItemInfo>();
+  set result(ListBuilder<ItemInfo> result) => _$this._result = result;
+
   HistoryItemBuilder();
 
   HistoryItemBuilder get _$this {
     if (_$v != null) {
-      _name = _$v.name;
-      _description = _$v.description;
+      _title = _$v.title;
       _imagePath = _$v.imagePath;
+      _result = _$v.result?.toBuilder();
       _$v = null;
     }
     return this;
@@ -290,9 +356,116 @@ class HistoryItemBuilder implements Builder<HistoryItem, HistoryItemBuilder> {
 
   @override
   _$HistoryItem build() {
+    _$HistoryItem _$result;
+    try {
+      _$result = _$v ??
+          new _$HistoryItem._(
+              title: title, imagePath: imagePath, result: _result?.build());
+    } catch (_) {
+      String _$failedField;
+      try {
+        _$failedField = 'result';
+        _result?.build();
+      } catch (e) {
+        throw new BuiltValueNestedFieldError(
+            'HistoryItem', _$failedField, e.toString());
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
+class _$ItemInfo extends ItemInfo {
+  @override
+  final String name;
+  @override
+  final num score;
+  @override
+  final String description;
+
+  factory _$ItemInfo([void Function(ItemInfoBuilder) updates]) =>
+      (new ItemInfoBuilder()..update(updates)).build();
+
+  _$ItemInfo._({this.name, this.score, this.description}) : super._();
+
+  @override
+  ItemInfo rebuild(void Function(ItemInfoBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  ItemInfoBuilder toBuilder() => new ItemInfoBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is ItemInfo &&
+        name == other.name &&
+        score == other.score &&
+        description == other.description;
+  }
+
+  @override
+  int get hashCode {
+    return $jf(
+        $jc($jc($jc(0, name.hashCode), score.hashCode), description.hashCode));
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper('ItemInfo')
+          ..add('name', name)
+          ..add('score', score)
+          ..add('description', description))
+        .toString();
+  }
+}
+
+class ItemInfoBuilder implements Builder<ItemInfo, ItemInfoBuilder> {
+  _$ItemInfo _$v;
+
+  String _name;
+  String get name => _$this._name;
+  set name(String name) => _$this._name = name;
+
+  num _score;
+  num get score => _$this._score;
+  set score(num score) => _$this._score = score;
+
+  String _description;
+  String get description => _$this._description;
+  set description(String description) => _$this._description = description;
+
+  ItemInfoBuilder();
+
+  ItemInfoBuilder get _$this {
+    if (_$v != null) {
+      _name = _$v.name;
+      _score = _$v.score;
+      _description = _$v.description;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(ItemInfo other) {
+    if (other == null) {
+      throw new ArgumentError.notNull('other');
+    }
+    _$v = other as _$ItemInfo;
+  }
+
+  @override
+  void update(void Function(ItemInfoBuilder) updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  _$ItemInfo build() {
     final _$result = _$v ??
-        new _$HistoryItem._(
-            name: name, description: description, imagePath: imagePath);
+        new _$ItemInfo._(name: name, score: score, description: description);
     replace(_$result);
     return _$result;
   }

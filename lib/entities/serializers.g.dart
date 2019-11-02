@@ -11,11 +11,15 @@ Serializers _$serializers = (new Serializers().toBuilder()
       ..add(BaiKeInfo.serializer)
       ..add(HistoryEntity.serializer)
       ..add(HistoryItem.serializer)
+      ..add(ItemInfo.serializer)
       ..add(Result.serializer)
       ..add(ResultEntity.serializer)
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(HistoryItem)]),
           () => new ListBuilder<HistoryItem>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(ItemInfo)]),
+          () => new ListBuilder<ItemInfo>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Result)]),
           () => new ListBuilder<Result>()))
