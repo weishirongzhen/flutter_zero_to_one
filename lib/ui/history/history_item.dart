@@ -23,11 +23,8 @@ class HistoryItemWidget extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: <Widget>[
-            DottedBorder(
-              borderType: BorderType.Circle,
-              dashPattern: [6, 3, 2, 3],
-              strokeWidth: 2,
-              color: Colors.green,
+            Hero(
+              tag: index,
               child: Container(
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -57,7 +54,7 @@ class HistoryItemWidget extends StatelessWidget {
                   splashColor: Colors.white.withAlpha(200),
                   customBorder: CircleBorder(),
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => DetailPage(item)));
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => DetailPage(item, index)));
                   },
                   onLongPress: () {
                     showDialog(

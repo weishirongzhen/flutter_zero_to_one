@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_zero_to_one/entities/history_entity.dart';
@@ -67,16 +68,31 @@ class _RecognizePageState extends State<RecognizePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              _buildPreview(widget._imageFile),
-              _buildRecognizeResult(),
-            ],
-            mainAxisSize: MainAxisSize.min,
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            fit: BoxFit.cover,
+            image: FileImage(widget._imageFile),
+          ),
+        ),
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    _buildPreview(widget._imageFile),
+                    _buildRecognizeResult(),
+                  ],
+                  mainAxisSize: MainAxisSize.min,
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -152,11 +168,28 @@ class _RecognizePageState extends State<RecognizePage> {
       return Column(
         children: <Widget>[
           TitleWidget(result.score, result.name),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            child: Text(
-              result.baiKeInfo.description,
-              style: TextStyle(fontSize: 18, color: Colors.black87),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.black12,
+              borderRadius: BorderRadius.circular((10.0)), //
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Text(
+                result.baiKeInfo.description,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 4.0,
+                      color: Colors.black,
+                      offset: Offset(2.0, 2.0),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],

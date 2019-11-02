@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          '我的动植物园',
+          '百草园',
           style: TextStyle(color: Colors.white, fontSize: 20),
         ),
         actions: <Widget>[
