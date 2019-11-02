@@ -36,6 +36,7 @@ dependencies:
   font_awesome_flutter: ^8.5.0
   path_provider: ^1.4.0
   flutter_speed_dial: ^1.2.4
+  package_info: ^0.4.0+10
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +59,7 @@ flutter:
   assets:
    - local/config.json
    - assets/default_images/
+   - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
