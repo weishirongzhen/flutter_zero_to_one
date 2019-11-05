@@ -26,9 +26,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
   @override
   void initState() {
     Utils.initialAPIAccessToken();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<HistoryNotifier>(context).initHistory();
-    });
+    Provider.of<HistoryNotifier>(context,listen: false).initHistory();
     super.initState();
   }
 

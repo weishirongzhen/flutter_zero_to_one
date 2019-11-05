@@ -29,7 +29,32 @@ class _RecognizePageState extends State<RecognizePage> {
   void initState() {
     _result = _initialRecognize(widget._imageFile, widget.imageType);
     _initHistorySaving();
+    _checkConnectivity();
     super.initState();
+  }
+
+  void _checkConnectivity() async {
+    if (!(await Utils.hasConnectivity())) {
+      showDialog(
+        barrierDismissible: true,
+        context: context,
+        builder: (BuildContext context) =>  AlertDialog(
+          title: Text("无网络链连接"),
+          content: Text("请连接到网络后重试"),
+          actions: [
+            FlatButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child:  Text(
+                "好的",
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   void _initHistorySaving() async {

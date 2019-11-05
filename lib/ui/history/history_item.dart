@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zero_to_one/entities/history_entity.dart';
@@ -60,14 +59,14 @@ class HistoryItemWidget extends StatelessWidget {
                     showDialog(
                       barrierDismissible: true,
                       context: context,
-                      builder: (BuildContext context) => new AlertDialog(
-                        title: new Text("删除 ${item.title}?"),
+                      builder: (BuildContext context) => AlertDialog(
+                        title: Text("删除 ${item.title}?"),
                         actions: [
                           FlatButton(
                             onPressed: () {
                               Navigator.pop(context);
                             },
-                            child: new Text(
+                            child: Text(
                               "取消",
                               style: TextStyle(fontSize: 18, color: Colors.grey),
                             ),
@@ -80,7 +79,7 @@ class HistoryItemWidget extends StatelessWidget {
                               }
                               Navigator.pop(context);
                             },
-                            child: new Text(
+                            child: Text(
                               "删除",
                               style: TextStyle(fontSize: 18),
                             ),

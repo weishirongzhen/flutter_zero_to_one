@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_zero_to_one/entities/access_token_entity.dart';
@@ -39,14 +40,14 @@ class Utils {
   }
 
   ///保存到文件
-  static Future<String> saveImageFile(String name, Uint8List bytes) async{
+  static Future<String> saveImageFile(String name, Uint8List bytes) async {
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/$name.webp');
     file.writeAsBytes(bytes);
     return '${directory.path}/$name.webp';
   }
 
-  static Future<Uint8List> getHistoryImageFile(String name) async{
+  static Future<Uint8List> getHistoryImageFile(String name) async {
     final directory = await getApplicationDocumentsDirectory();
     return File('${directory.path}/$name.webp').readAsBytes();
   }
@@ -61,5 +62,10 @@ class Utils {
   static Future<ResultEntity> animal(String base64, int baikeNum, String accessToken) async {
     final result = await HttpService.animal(accessToken, base64, baikeNum);
     return result;
+  }
+
+  static Future<bool> hasConnectivity() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    return connectivityResult != ConnectivityResult.none;
   }
 }
