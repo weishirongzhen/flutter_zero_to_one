@@ -38,7 +38,7 @@ class _RecognizePageState extends State<RecognizePage> {
       showDialog(
         barrierDismissible: true,
         context: context,
-        builder: (BuildContext context) =>  AlertDialog(
+        builder: (BuildContext context) => AlertDialog(
           title: Text("无网络链连接"),
           content: Text("请连接到网络后重试"),
           actions: [
@@ -46,7 +46,7 @@ class _RecognizePageState extends State<RecognizePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child:  Text(
+              child: Text(
                 "好的",
                 style: TextStyle(fontSize: 18),
               ),
@@ -92,7 +92,10 @@ class _RecognizePageState extends State<RecognizePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text('识别结果'),
+      ),
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
