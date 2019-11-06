@@ -9,6 +9,7 @@ import 'package:flutter_zero_to_one/entities/access_token_entity.dart';
 import 'package:flutter_zero_to_one/entities/result_entity.dart';
 import 'package:flutter_zero_to_one/http/http_request.dart';
 import 'package:flutter_zero_to_one/utils/user_default.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 class Utils {
@@ -41,15 +42,16 @@ class Utils {
 
   ///保存到文件
   static Future<String> saveImageFile(String name, Uint8List bytes) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/$name.webp');
+    String prefix = DateFormat('yyyyMMddHHmmss').format(DateTime.now());
+    Directory directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/$prefix$name.webp');
     file.writeAsBytes(bytes);
-    return '${directory.path}/$name.webp';
+    return '${directory.path}/$prefix$name.webp';
   }
 
-  static Future<Uint8List> getHistoryImageFile(String name) async {
+  static Future<Uint8List> getHistoryImageFile(String fullFileName) async {
     final directory = await getApplicationDocumentsDirectory();
-    return File('${directory.path}/$name.webp').readAsBytes();
+    return File('${directory.path}/$fullFileName').readAsBytes();
   }
 
   ///植物识别

@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_zero_to_one/entities/history_entity.dart';
 import 'package:flutter_zero_to_one/entities/serializers.dart';
 import 'package:flutter_zero_to_one/utils/utils.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserDefault {
@@ -28,16 +30,15 @@ class UserDefault {
     return pre.remove("access_token");
   }
 
-
   static Future<bool> deleteHistory(int index) async {
     HistoryEntity history = await getHistory();
-    history = history.rebuild((update)=> update..list.removeAt(index));
+    history = history.rebuild((update) => update..list.removeAt(index));
     dynamic deletedWrapper = jsonDecode(history.toJson());
     return pre.setString('history', jsonEncode(deletedWrapper['list']));
-
   }
 
   static void saveHistory(HistoryItem item) async {
+    print('path = ${item.imagePath}');
     BuiltList<HistoryItem> list = deserializeListOf<HistoryItem>(jsonDecode(pre.getString("history") ?? '[]'));
     HistoryEntity oldHistoryEntity = HistoryEntity((update) => update..list.addAll(list));
     HistoryEntity newHistoryEntity;
@@ -66,16 +67,28 @@ class UserDefault {
       }).toList();
 
       ///reList是一个List<Future<HistoryItem>> ,需要变成 List<HistoryItem>
-      final extraList = await Future.wait(reList);
+      final extractList = await Future.wait(reList);
 
-      HistoryEntity entity = HistoryEntity((update) => update..list.addAll(extraList));
+      HistoryEntity entity = HistoryEntity((update) => update..list.addAll(extractList));
 
       dynamic jsonObject = jsonDecode(entity.toJson());
       pre.setString('history', jsonEncode(jsonObject['list']));
       return entity;
     } else {
       BuiltList<HistoryItem> list = deserializeListOf<HistoryItem>(jsonDecode(data));
-      return HistoryEntity((update) => update..list.addAll(list));
+
+      ///处理ios沙盒，每次更新之后目录名改变之后问题，资源查找问题，以下代码修改旧路径为新路径
+      if (Platform.isIOS) {
+        final reList = list.map((f) async {
+          Directory directory = await getApplicationDocumentsDirectory();
+          return f.rebuild((update) => update..imagePath = directory.path + f.imagePath.substring(f.imagePath.lastIndexOf('/')));
+        }).toList();
+
+        final extractList = await Future.wait(reList);
+        return HistoryEntity((update) => update..list.addAll(extractList));
+      } else {
+        return HistoryEntity((update) => update..list.addAll(list));
+      }
     }
   }
 }
