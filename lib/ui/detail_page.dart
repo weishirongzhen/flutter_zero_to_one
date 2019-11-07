@@ -87,7 +87,7 @@ class DetailPage extends StatelessWidget {
                                         Shadow(
                                           blurRadius: 4.0,
                                           color: Colors.black,
-                                          offset: Offset(2.0, 2.0),
+                                          offset: Offset(1.0, 1.0),
                                         ),
                                       ],
                                     ),

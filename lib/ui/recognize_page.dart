@@ -82,7 +82,7 @@ class _RecognizePageState extends State<RecognizePage> {
 
             ///延迟100ms 刷新上层历史界面
             await Future.delayed(Duration(milliseconds: 100));
-            Provider.of<HistoryNotifier>(context).initHistory();
+            Provider.of<HistoryNotifier>(context).updateHistory();
           }
         }
       }
@@ -213,7 +213,7 @@ class _RecognizePageState extends State<RecognizePage> {
                     Shadow(
                       blurRadius: 4.0,
                       color: Colors.black,
-                      offset: Offset(2.0, 2.0),
+                      offset: Offset(1.0, 1.0),
                     ),
                   ],
                 ),

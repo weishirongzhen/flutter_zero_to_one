@@ -7,11 +7,7 @@ class HistoryNotifier extends ChangeNotifier {
 
   HistoryEntity get entity => _entity;
 
-  void addToHistory() {
-    notifyListeners();
-  }
-
-  void initHistory() async {
+  void updateHistory() async {
     _entity = await UserDefault.getHistory();
     notifyListeners();
   }

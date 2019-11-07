@@ -26,7 +26,7 @@ class _TitleWidgetState extends State<TitleWidget> {
                 color: Colors.green,
                 shadows: [
                   Shadow(
-                    blurRadius: 4.0,
+                    blurRadius: 2.0,
                     color: Colors.black,
                     offset: Offset(1.0, 1.0),
                   ),
@@ -40,7 +40,7 @@ class _TitleWidgetState extends State<TitleWidget> {
                 color: Colors.green,
                 shadows: [
                   Shadow(
-                    blurRadius: 4.0,
+                    blurRadius: 2.0,
                     color: Colors.black,
                     offset: Offset(1.0, 1.0),
                   ),

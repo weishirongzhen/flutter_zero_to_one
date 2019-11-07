@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,8 +16,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-enum WhyFarther { harder, smarter, selfStarter, tradingCharter }
-
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -26,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
   @override
   void initState() {
     Utils.initialAPIAccessToken();
-    Provider.of<HistoryNotifier>(context,listen: false).initHistory();
+    Provider.of<HistoryNotifier>(context, listen: false).updateHistory();
     super.initState();
   }
 
@@ -149,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
                 child: HistoryPage(),
               ),
               SizedBox(
-                height: 80,
+                height: 100,
               )
             ],
           ),

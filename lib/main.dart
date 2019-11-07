@@ -14,7 +14,6 @@ void main() async {
   SystemUiOverlayStyle systemUiOverlayStyle = SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     systemNavigationBarColor: Colors.green,
-
   );
   SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
 }

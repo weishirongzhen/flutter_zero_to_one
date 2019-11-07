@@ -75,7 +75,7 @@ class HistoryItemWidget extends StatelessWidget {
                             onPressed: () async {
                               bool success = await UserDefault.deleteHistory(index);
                               if (success) {
-                                Provider.of<HistoryNotifier>(context).initHistory();
+                                Provider.of<HistoryNotifier>(context).updateHistory();
                               }
                               Navigator.pop(context);
                             },
