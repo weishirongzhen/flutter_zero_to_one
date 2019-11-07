@@ -17,6 +17,14 @@ abstract class ResultEntity implements Built<ResultEntity, ResultEntityBuilder> 
   num get logId;
 
   @nullable
+  @BuiltValueField(wireName: 'error_code')
+  int get errorCode;
+
+  @nullable
+  @BuiltValueField(wireName: 'error_msg')
+  String get errorMsg;
+
+  @nullable
   BuiltList<Result> get result;
 
   factory ResultEntity([void Function(ResultEntityBuilder) updates]) = _$ResultEntity;

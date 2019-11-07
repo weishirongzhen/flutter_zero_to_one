@@ -17,8 +17,7 @@ class UserDefault {
     return Future.value(null);
   }
 
-  ///保存token
-  static void saveToken(String token) async {
+  static Future<void> saveToken(String token) async {
     await pre.setString("access_token", token);
   }
 
@@ -30,6 +29,19 @@ class UserDefault {
     return pre.remove("access_token");
   }
 
+  ///保存token过期时间,传入参数为秒， 保存实际时间为millisecondsSinceEpoch
+  static Future<void> setTokenExpireTime(int expireIn) async {
+    DateTime now = DateTime.now();
+    DateTime expire = now.add(Duration(seconds: expireIn));
+    await pre.setInt("token_valid_time", expire.millisecondsSinceEpoch);
+  }
+
+  ///获取token过期时间，单位毫秒
+  static int getTokenValidTime() {
+    return pre.getInt("token_valid_time") ?? DateTime.now().millisecondsSinceEpoch;
+  }
+
+  ///删除对应index的历史
   static Future<bool> deleteHistory(int index) async {
     HistoryEntity history = await getHistory();
     history = history.rebuild((update) => update..list.removeAt(index));
@@ -37,8 +49,8 @@ class UserDefault {
     return pre.setString('history', jsonEncode(deletedWrapper['list']));
   }
 
+  ///保存用户查询历史，最大默认只保存100，超过100条则删除最旧一条
   static void saveHistory(HistoryItem item) async {
-    print('path = ${item.imagePath}');
     BuiltList<HistoryItem> list = deserializeListOf<HistoryItem>(jsonDecode(pre.getString("history") ?? '[]'));
     HistoryEntity oldHistoryEntity = HistoryEntity((update) => update..list.addAll(list));
     HistoryEntity newHistoryEntity;
@@ -52,6 +64,8 @@ class UserDefault {
     pre.setString('history', jsonEncode(deletedWrapper['list']));
   }
 
+
+  ///获取历史，首次打开app会把assets中的默认数据，写入file保存
   static Future<HistoryEntity> getHistory() async {
     String data = pre.getString("history");
 
@@ -77,7 +91,7 @@ class UserDefault {
     } else {
       BuiltList<HistoryItem> list = deserializeListOf<HistoryItem>(jsonDecode(data));
 
-      ///处理ios沙盒，每次更新之后目录名改变之后问题，资源查找问题，以下代码修改旧路径为新路径
+      ///处理ios沙盒，每次更新之后Doc目录名改变之后，资源查找问题，以下代码修改旧路径为新路径
       if (Platform.isIOS) {
         final reList = list.map((f) async {
           Directory directory = await getApplicationDocumentsDirectory();

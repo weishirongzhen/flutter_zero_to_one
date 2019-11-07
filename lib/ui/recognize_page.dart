@@ -6,6 +6,7 @@ import 'package:flutter_zero_to_one/entities/history_entity.dart';
 import 'package:flutter_zero_to_one/entities/result_entity.dart';
 import 'package:flutter_zero_to_one/image_type.dart';
 import 'package:flutter_zero_to_one/notifier/history_notifier.dart';
+import 'package:flutter_zero_to_one/notifier/recognize_notifier.dart';
 import 'package:flutter_zero_to_one/ui/title_widget.dart';
 import 'package:flutter_zero_to_one/utils/user_default.dart';
 import 'package:flutter_zero_to_one/utils/utils.dart';
@@ -13,23 +14,19 @@ import 'package:provider/provider.dart';
 
 class RecognizePage extends StatefulWidget {
   final File _imageFile;
-  final ImageType imageType;
+  final ImageType _imageType;
 
-  RecognizePage(this._imageFile, this.imageType);
+  RecognizePage(this._imageFile, this._imageType);
 
   @override
   _RecognizePageState createState() => _RecognizePageState();
 }
 
 class _RecognizePageState extends State<RecognizePage> {
-  Future<ResultEntity> _result;
-  bool _isRecognizing = true;
-
   @override
   void initState() {
-    _result = _initialRecognize(widget._imageFile, widget.imageType);
-    _initHistorySaving();
     _checkConnectivity();
+    _startRecognizeProcess();
     super.initState();
   }
 
@@ -57,36 +54,54 @@ class _RecognizePageState extends State<RecognizePage> {
     }
   }
 
-  void _initHistorySaving() async {
-    String imagePath;
-    _result.asStream().listen((onData) async {
-      setState(() {
-        _isRecognizing = false;
-      });
-      if (onData != null) {
-        if (onData.result[0].name != null) {
-          imagePath = await Utils.saveImageFile(onData.result[0].name, widget._imageFile.readAsBytesSync());
-        }
-        if (onData.result != null) {
-          HistoryItem historyItem = HistoryItem((update) => update
-            ..title = onData.result[0].name
-            ..imagePath = imagePath
-            ..result.addAll(onData.result.map((data) {
-              return ItemInfo((item) => item
-                ..name = data.name
-                ..score = data.score
-                ..description = data.baiKeInfo?.description ?? '暂无描述信息');
-            }).toList()));
-          if (historyItem.title != '非植物' && historyItem.title != '非动物') {
-            UserDefault.saveHistory(historyItem);
+  void _saveRecognizeResult(ResultEntity entity) async {
+    if (entity.result != null) {
+      String imagePath;
 
-            ///延迟100ms 刷新上层历史界面
-            await Future.delayed(Duration(milliseconds: 100));
-            Provider.of<HistoryNotifier>(context).updateHistory();
-          }
-        }
+      ///首个结果的name,作为该图片的命名后缀
+      if (entity.result.first.name != null) {
+        imagePath = await Utils.saveImageFile(entity.result.first.name, widget._imageFile.readAsBytesSync());
       }
-    });
+
+      ///首个结果的name,作为该历史的title
+      HistoryItem historyItem = HistoryItem((update) => update
+        ..title = entity.result.first.name
+        ..imagePath = imagePath
+        ..result.addAll(entity.result.map((data) {
+          return ItemInfo((item) => item
+            ..name = data.name
+            ..score = data.score
+            ..description = data.baiKeInfo?.description ?? '暂无描述信息');
+        }).toList()));
+      if (historyItem.title != '非植物' && historyItem.title != '非动物') {
+        UserDefault.saveHistory(historyItem);
+
+        ///延迟100ms 刷新上层历史界面
+        await Future.delayed(Duration(milliseconds: 100));
+        Provider.of<HistoryNotifier>(context, listen: false).updateHistory();
+      }
+    }
+  }
+
+  ///调用接口识别图片
+  Future<ResultEntity> _recognize(File imageFile, ImageType type) {
+    if (type == ImageType.plant) {
+      return Utils.plant(Utils.imageFileToBase64(imageFile.readAsBytesSync()), 10, UserDefault.getToken());
+    } else {
+      return Utils.animal(Utils.imageFileToBase64(imageFile.readAsBytesSync()), 10, UserDefault.getToken());
+    }
+  }
+
+  ///检查token是否过期
+  Future<void> _startRecognizeProcess() async {
+    Provider.of<RecognizeNotifier>(context, listen: false).clear();
+    ResultEntity result = await _recognize(widget._imageFile, widget._imageType);
+    if (result != null && result.errorCode == 110) {
+      UserDefault.setTokenExpireTime(-1);
+      await Utils.initialAPIAccessToken();
+      result = await _recognize(widget._imageFile, widget._imageType);
+    }
+    Provider.of<RecognizeNotifier>(context, listen: false).updateResult(result);
   }
 
   @override
@@ -116,6 +131,9 @@ class _RecognizePageState extends State<RecognizePage> {
                   children: <Widget>[
                     _buildPreview(widget._imageFile),
                     _buildRecognizeResult(),
+                    SizedBox(
+                      height: 80,
+                    ),
                   ],
                   mainAxisSize: MainAxisSize.min,
                 ),
@@ -127,68 +145,87 @@ class _RecognizePageState extends State<RecognizePage> {
     );
   }
 
-  Future<ResultEntity> _initialRecognize(File imageFile, ImageType type) {
-    String base64code = Utils.imageFileToBase64(imageFile.readAsBytesSync());
-
-    if (type == ImageType.plant) {
-      return Utils.plant(base64code, 10, UserDefault.getToken());
-    } else {
-      return Utils.animal(base64code, 10, UserDefault.getToken());
-    }
-  }
-
+  ///图片预览
   Widget _buildPreview(File image) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Center(
         child: Container(
-          height: MediaQuery.of(context).size.width * 3 / 4,
-          width: MediaQuery.of(context).size.width * 3 / 4,
-          decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: FileImage(image),
-              )),
-          child: _isRecognizing
-              ? CircularProgressIndicator(
-                  strokeWidth: 10,
-                )
-              : SizedBox(),
-        ),
+            height: MediaQuery.of(context).size.width * 3 / 4,
+            width: MediaQuery.of(context).size.width * 3 / 4,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: FileImage(image),
+                )),
+            child: Consumer<RecognizeNotifier>(
+              builder: (context, snapshot, _) {
+                if (snapshot.entity == null) {
+                  return CircularProgressIndicator(
+                    strokeWidth: 10,
+                  );
+                } else {
+                  return SizedBox();
+                }
+              },
+            )),
       ),
     );
   }
 
+  ///创建识别结果list
   Widget _buildRecognizeResult() {
-    return FutureBuilder<ResultEntity>(
-        future: _result,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return ListView.separated(
-                separatorBuilder: (BuildContext context, int index) => Divider(
-                      height: 4,
-                    ),
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: snapshot.data.result.length,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  return _buildDescription(snapshot.data.result[index]);
-                });
-          } else {
-            return SizedBox();
-          }
-        });
+    return Consumer<RecognizeNotifier>(
+      builder: (context, snapshot, _) {
+        if (snapshot.entity != null && snapshot.entity.result != null) {
+          _saveRecognizeResult(snapshot.entity);
+          return ListView.separated(
+              separatorBuilder: (BuildContext context, int index) => Divider(
+                    height: 4,
+                  ),
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: snapshot.entity.result.length,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return _buildDescription(snapshot.entity.result[index]);
+              });
+        } else {
+          return SizedBox();
+        }
+      },
+    );
   }
 
+  ///创建识别结果item
   Widget _buildDescription(Result result) {
     if (result.baiKeInfo == null || result.baiKeInfo?.description == null) {
       return Column(
         children: <Widget>[
           TitleWidget(result.score, result.name),
-          Text(
-            '暂无描述信息',
-            style: TextStyle(fontSize: 18, color: Colors.black87),
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.black12,
+              borderRadius: BorderRadius.circular((10.0)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Text(
+                '暂无描述信息',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 4.0,
+                      color: Colors.black,
+                      offset: Offset(1.0, 1.0),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       );

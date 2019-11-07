@@ -29,15 +29,16 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
     super.initState();
   }
 
+  ///使用ImagePicker插件获取手机图片，默认最大高宽不超过1000像素，减少网络传输量
   Future<void> _getImage(ImageSource source, ImageType type) async {
-    final File imageFile = await ImagePicker.pickImage(source: source, maxWidth: 800, maxHeight: 800);
-
+    final File imageFile = await ImagePicker.pickImage(source: source, maxWidth: 1000, maxHeight: 1000);
     if (imageFile != null) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => RecognizePage(imageFile, type)));
     }
   }
 
-  Future<ImageSource> _showDialog(BuildContext context, ImageType type) async {
+  ///ios风格的图片来源选择对话框
+  Future<ImageSource> _showImageSourceDialog(BuildContext context, ImageType type) async {
     return showCupertinoModalPopup<ImageSource>(
         context: context,
         builder: (context) {
@@ -121,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
             label: '识别动物',
             labelStyle: TextStyle(fontSize: 18.0),
             onTap: () async {
-              _getImage(await _showDialog(context, ImageType.animal), ImageType.animal);
+              _getImage(await _showImageSourceDialog(context, ImageType.animal), ImageType.animal);
             },
           ),
           SpeedDialChild(
@@ -130,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
             label: '识别植物',
             labelStyle: TextStyle(fontSize: 18.0),
             onTap: () async {
-              _getImage(await _showDialog(context, ImageType.plant), ImageType.plant);
+              _getImage(await _showImageSourceDialog(context, ImageType.plant), ImageType.plant);
             },
           ),
         ],
@@ -165,6 +166,8 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
 
   @override
   void onEvent(Event event) {
-    if (event.body is DioError) {}
+    if (event.body is DioError) {
+      //统计网络错误信息
+    }
   }
 }

@@ -24,12 +24,25 @@ class Utils {
   }
 
   ///获取接口访问token
-  static void initialAPIAccessToken() async {
-    final apiKey = (await Utils.getBaiDuKeys())['api_key'];
-    final secretKeys = (await Utils.getBaiDuKeys())['secret_key'];
-    AccessTokenEntity accessTokenEntity = await HttpService.getAccessToken(apiKey, secretKeys);
-    if (accessTokenEntity != null) {
-      UserDefault.saveToken(accessTokenEntity.accessToken);
+  static Future<void> initialAPIAccessToken() async {
+    if (isTokenExpired()) {
+      final apiKey = (await Utils.getBaiDuKeys())['api_key'];
+      final secretKeys = (await Utils.getBaiDuKeys())['secret_key'];
+      AccessTokenEntity accessTokenEntity = await HttpService.getAccessToken(apiKey, secretKeys);
+      if (accessTokenEntity != null) {
+        await UserDefault.saveToken(accessTokenEntity.accessToken);
+        await UserDefault.setTokenExpireTime(accessTokenEntity.expiresIn);
+      }
+    }
+  }
+
+  static bool isTokenExpired() {
+    DateTime now = DateTime.now();
+    DateTime expiredTime = DateTime.fromMillisecondsSinceEpoch(UserDefault.getTokenValidTime());
+    if (expiredTime.compareTo(now) <= 0) {
+      return true;
+    } else {
+      return false;
     }
   }
 

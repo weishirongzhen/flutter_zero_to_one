@@ -11,4 +11,10 @@ class HistoryNotifier extends ChangeNotifier {
     _entity = await UserDefault.getHistory();
     notifyListeners();
   }
+
+  @override
+  void dispose() {
+    _entity = null;
+    super.dispose();
+  }
 }

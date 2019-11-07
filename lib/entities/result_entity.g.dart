@@ -27,6 +27,18 @@ class _$ResultEntitySerializer implements StructuredSerializer<ResultEntity> {
         ..add(serializers.serialize(object.logId,
             specifiedType: const FullType(num)));
     }
+    if (object.errorCode != null) {
+      result
+        ..add('error_code')
+        ..add(serializers.serialize(object.errorCode,
+            specifiedType: const FullType(int)));
+    }
+    if (object.errorMsg != null) {
+      result
+        ..add('error_msg')
+        ..add(serializers.serialize(object.errorMsg,
+            specifiedType: const FullType(String)));
+    }
     if (object.result != null) {
       result
         ..add('result')
@@ -51,6 +63,14 @@ class _$ResultEntitySerializer implements StructuredSerializer<ResultEntity> {
         case 'log_id':
           result.logId = serializers.deserialize(value,
               specifiedType: const FullType(num)) as num;
+          break;
+        case 'error_code':
+          result.errorCode = serializers.deserialize(value,
+              specifiedType: const FullType(int)) as int;
+          break;
+        case 'error_msg':
+          result.errorMsg = serializers.deserialize(value,
+              specifiedType: const FullType(String)) as String;
           break;
         case 'result':
           result.result.replace(serializers.deserialize(value,
@@ -191,12 +211,17 @@ class _$ResultEntity extends ResultEntity {
   @override
   final num logId;
   @override
+  final int errorCode;
+  @override
+  final String errorMsg;
+  @override
   final BuiltList<Result> result;
 
   factory _$ResultEntity([void Function(ResultEntityBuilder) updates]) =>
       (new ResultEntityBuilder()..update(updates)).build();
 
-  _$ResultEntity._({this.logId, this.result}) : super._();
+  _$ResultEntity._({this.logId, this.errorCode, this.errorMsg, this.result})
+      : super._();
 
   @override
   ResultEntity rebuild(void Function(ResultEntityBuilder) updates) =>
@@ -210,18 +235,24 @@ class _$ResultEntity extends ResultEntity {
     if (identical(other, this)) return true;
     return other is ResultEntity &&
         logId == other.logId &&
+        errorCode == other.errorCode &&
+        errorMsg == other.errorMsg &&
         result == other.result;
   }
 
   @override
   int get hashCode {
-    return $jf($jc($jc(0, logId.hashCode), result.hashCode));
+    return $jf($jc(
+        $jc($jc($jc(0, logId.hashCode), errorCode.hashCode), errorMsg.hashCode),
+        result.hashCode));
   }
 
   @override
   String toString() {
     return (newBuiltValueToStringHelper('ResultEntity')
           ..add('logId', logId)
+          ..add('errorCode', errorCode)
+          ..add('errorMsg', errorMsg)
           ..add('result', result))
         .toString();
   }
@@ -235,6 +266,14 @@ class ResultEntityBuilder
   num get logId => _$this._logId;
   set logId(num logId) => _$this._logId = logId;
 
+  int _errorCode;
+  int get errorCode => _$this._errorCode;
+  set errorCode(int errorCode) => _$this._errorCode = errorCode;
+
+  String _errorMsg;
+  String get errorMsg => _$this._errorMsg;
+  set errorMsg(String errorMsg) => _$this._errorMsg = errorMsg;
+
   ListBuilder<Result> _result;
   ListBuilder<Result> get result =>
       _$this._result ??= new ListBuilder<Result>();
@@ -245,6 +284,8 @@ class ResultEntityBuilder
   ResultEntityBuilder get _$this {
     if (_$v != null) {
       _logId = _$v.logId;
+      _errorCode = _$v.errorCode;
+      _errorMsg = _$v.errorMsg;
       _result = _$v.result?.toBuilder();
       _$v = null;
     }
@@ -268,8 +309,12 @@ class ResultEntityBuilder
   _$ResultEntity build() {
     _$ResultEntity _$result;
     try {
-      _$result =
-          _$v ?? new _$ResultEntity._(logId: logId, result: _result?.build());
+      _$result = _$v ??
+          new _$ResultEntity._(
+              logId: logId,
+              errorCode: errorCode,
+              errorMsg: errorMsg,
+              result: _result?.build());
     } catch (_) {
       String _$failedField;
       try {
