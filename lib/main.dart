@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_zero_to_one/notifier/history_notifier.dart';
-import 'package:flutter_zero_to_one/notifier/recognize_notifier.dart';
 import 'package:flutter_zero_to_one/ui/home_screen.dart';
 import 'package:flutter_zero_to_one/utils/user_default.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +24,6 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(builder: (_) => HistoryNotifier()),
-        ChangeNotifierProvider(builder: (_) => RecognizeNotifier()),
       ],
       child: MaterialApp(
         theme: ThemeData(

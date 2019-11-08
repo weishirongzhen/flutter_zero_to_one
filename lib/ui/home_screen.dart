@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
   Future<void> _getImage(ImageSource source, ImageType type) async {
     final File imageFile = await ImagePicker.pickImage(source: source, maxWidth: 1000, maxHeight: 1000);
     if (imageFile != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => RecognizePage(imageFile, type)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ResultPage(imageFile, type)));
     }
   }
 

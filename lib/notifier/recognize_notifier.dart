@@ -14,4 +14,9 @@ class RecognizeNotifier extends ChangeNotifier {
   void clear() {
     _entity = null;
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 }

@@ -12,46 +12,38 @@ import 'package:flutter_zero_to_one/utils/user_default.dart';
 import 'package:flutter_zero_to_one/utils/utils.dart';
 import 'package:provider/provider.dart';
 
-class RecognizePage extends StatefulWidget {
+///将RecognizeNotifier 放到这里是为了在ResultPage dispose的时候将识别结果一并dispose。
+///因为RecognizeNotifier必须提供在要使用的界面的上一级， 所以封装了一级，不知道有没有其他更方便的办法
+class ResultPage extends StatelessWidget {
   final File _imageFile;
   final ImageType _imageType;
 
-  RecognizePage(this._imageFile, this._imageType);
+  ResultPage(this._imageFile, this._imageType);
 
   @override
-  _RecognizePageState createState() => _RecognizePageState();
+  Widget build(BuildContext context) {
+    return MultiProvider(providers: [
+      ChangeNotifierProvider(builder: (_) => RecognizeNotifier()),
+    ], child: RecognizeWidget(_imageFile, _imageType));
+  }
 }
 
-class _RecognizePageState extends State<RecognizePage> {
+class RecognizeWidget extends StatefulWidget {
+  final File _imageFile;
+  final ImageType _imageType;
+
+  RecognizeWidget(this._imageFile, this._imageType);
+
+  @override
+  _RecognizeWidgetState createState() => _RecognizeWidgetState();
+}
+
+class _RecognizeWidgetState extends State<RecognizeWidget> {
   @override
   void initState() {
-    _checkConnectivity();
+    Utils.checkConnectivity(context);
     _startRecognizeProcess();
     super.initState();
-  }
-
-  void _checkConnectivity() async {
-    if (!(await Utils.hasConnectivity())) {
-      showDialog(
-        barrierDismissible: true,
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: Text("无网络链连接"),
-          content: Text("请连接到网络后重试"),
-          actions: [
-            FlatButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                "好的",
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
   }
 
   void _saveRecognizeResult(ResultEntity entity) async {
@@ -86,15 +78,14 @@ class _RecognizePageState extends State<RecognizePage> {
   ///调用接口识别图片
   Future<ResultEntity> _recognize(File imageFile, ImageType type) {
     if (type == ImageType.plant) {
-      return Utils.plant(Utils.imageFileToBase64(imageFile.readAsBytesSync()), 10, UserDefault.getToken());
+      return Utils.recognizePlant(Utils.imageFileToBase64(imageFile.readAsBytesSync()), 10, UserDefault.getToken());
     } else {
-      return Utils.animal(Utils.imageFileToBase64(imageFile.readAsBytesSync()), 10, UserDefault.getToken());
+      return Utils.recognizeAnimal(Utils.imageFileToBase64(imageFile.readAsBytesSync()), 10, UserDefault.getToken());
     }
   }
 
   ///检查token是否过期
   Future<void> _startRecognizeProcess() async {
-    Provider.of<RecognizeNotifier>(context, listen: false).clear();
     ResultEntity result = await _recognize(widget._imageFile, widget._imageType);
     if (result != null && result.errorCode == 110) {
       UserDefault.setTokenExpireTime(-1);

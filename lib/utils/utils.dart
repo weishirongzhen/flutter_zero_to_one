@@ -68,13 +68,13 @@ class Utils {
   }
 
   ///植物识别
-  static Future<ResultEntity> plant(String base64, int baikeNum, String accessToken) async {
+  static Future<ResultEntity> recognizePlant(String base64, int baikeNum, String accessToken) async {
     final result = await HttpService.plant(accessToken, base64, baikeNum);
     return result;
   }
 
   ///动物识别
-  static Future<ResultEntity> animal(String base64, int baikeNum, String accessToken) async {
+  static Future<ResultEntity> recognizeAnimal(String base64, int baikeNum, String accessToken) async {
     final result = await HttpService.animal(accessToken, base64, baikeNum);
     return result;
   }
@@ -82,5 +82,29 @@ class Utils {
   static Future<bool> hasConnectivity() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     return connectivityResult != ConnectivityResult.none;
+  }
+
+  static Future<void> checkConnectivity(BuildContext context) async {
+    if (!(await hasConnectivity())) {
+      showDialog(
+        barrierDismissible: true,
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: Text("无网络链连接"),
+          content: Text("请连接到网络后重试"),
+          actions: [
+            FlatButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                "好的",
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }
