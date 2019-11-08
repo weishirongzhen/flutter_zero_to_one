@@ -4,12 +4,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_zero_to_one/entities/history_entity.dart';
 import 'package:flutter_zero_to_one/entities/result_entity.dart';
+import 'package:flutter_zero_to_one/events.dart';
 import 'package:flutter_zero_to_one/image_type.dart';
 import 'package:flutter_zero_to_one/notifier/history_notifier.dart';
 import 'package:flutter_zero_to_one/notifier/recognize_notifier.dart';
 import 'package:flutter_zero_to_one/ui/title_widget.dart';
 import 'package:flutter_zero_to_one/utils/user_default.dart';
 import 'package:flutter_zero_to_one/utils/utils.dart';
+import 'package:flutter_zero_to_one/wtf_bus.dart';
 import 'package:provider/provider.dart';
 
 ///将RecognizeNotifier 放到这里是为了在ResultPage dispose的时候将识别结果一并dispose。
@@ -101,6 +103,21 @@ class _RecognizeWidgetState extends State<RecognizeWidget> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('识别结果'),
+        actions: <Widget>[
+          SizedBox(
+            width: 70,
+            child: FlatButton(
+              child: Text(
+                '重选',
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                WtfBus().postEvent(ReSelectEvent(widget._imageType));
+              },
+            ),
+          )
+        ],
       ),
       body: Container(
         width: MediaQuery.of(context).size.width,

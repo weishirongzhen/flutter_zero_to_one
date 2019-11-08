@@ -1,19 +1,17 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_zero_to_one/events.dart';
 import 'package:flutter_zero_to_one/image_type.dart';
 import 'package:flutter_zero_to_one/notifier/history_notifier.dart';
 import 'package:flutter_zero_to_one/ui/about_page.dart';
 import 'package:flutter_zero_to_one/ui/history/history_page.dart';
-import 'package:flutter_zero_to_one/ui/recognize_page.dart';
 import 'package:flutter_zero_to_one/utils/utils.dart';
 import 'package:flutter_zero_to_one/wtf_bus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,63 +25,6 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
     Utils.initialAPIAccessToken();
     Provider.of<HistoryNotifier>(context, listen: false).updateHistory();
     super.initState();
-  }
-
-  ///使用ImagePicker插件获取手机图片，默认最大高宽不超过1000像素，减少网络传输量
-  Future<void> _getImage(ImageSource source, ImageType type) async {
-    final File imageFile = await ImagePicker.pickImage(source: source, maxWidth: 1000, maxHeight: 1000);
-    if (imageFile != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => ResultPage(imageFile, type)));
-    }
-  }
-
-  ///ios风格的图片来源选择对话框
-  Future<ImageSource> _showImageSourceDialog(BuildContext context, ImageType type) async {
-    return showCupertinoModalPopup<ImageSource>(
-        context: context,
-        builder: (context) {
-          return CupertinoActionSheet(
-            cancelButton: CupertinoActionSheetAction(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text("取消")),
-            title: Text(
-              type == ImageType.plant ? "选择植物" : "选择动物",
-              style: TextStyle(fontSize: 20),
-            ),
-            actions: <Widget>[
-              CupertinoActionSheetAction(
-                  onPressed: () {
-                    Navigator.pop(context, ImageSource.camera);
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(FontAwesomeIcons.camera),
-                      SizedBox(
-                        width: 18,
-                      ),
-                      Text('拍照'),
-                    ],
-                  )),
-              CupertinoActionSheetAction(
-                  onPressed: () {
-                    Navigator.pop(context, ImageSource.gallery);
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(FontAwesomeIcons.images),
-                      SizedBox(
-                        width: 18,
-                      ),
-                      Text('相册'),
-                    ],
-                  )),
-            ],
-          );
-        });
   }
 
   @override
@@ -122,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
             label: '识别动物',
             labelStyle: TextStyle(fontSize: 18.0),
             onTap: () async {
-              _getImage(await _showImageSourceDialog(context, ImageType.animal), ImageType.animal);
+              Utils.getImage(await Utils.showImageSourceDialog(context, ImageType.animal), ImageType.animal, context);
             },
           ),
           SpeedDialChild(
@@ -131,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
             label: '识别植物',
             labelStyle: TextStyle(fontSize: 18.0),
             onTap: () async {
-              _getImage(await _showImageSourceDialog(context, ImageType.plant), ImageType.plant);
+              Utils.getImage(await Utils.showImageSourceDialog(context, ImageType.plant), ImageType.plant, context);
             },
           ),
         ],
@@ -165,9 +106,12 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
   }
 
   @override
-  void onEvent(Event event) {
+  void onEvent(Event event) async {
     if (event.body is DioError) {
-      //统计网络错误信息
+      Utils.showNetWorkError(context);
+    } else if (event.body is ReSelectEvent) {
+      ReSelectEvent reSelectEvent = event.body;
+      Utils.getImage(await Utils.showImageSourceDialog(context, reSelectEvent.type), reSelectEvent.type, context);
     }
   }
 }
