@@ -49,7 +49,7 @@ class AboutPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(14.0),
                       child: Text(
-                        '''这个应用程序是我的公众号【码托邦】的【Flutter从零到上架应用商店】系列文章的示例App，代码以开源，更多介绍请关注我的微信公众号。\n\n此应用程序不会收集您的任何个人信息，所有的历史信息均保存在本地，不会上传，请放心使用。
+                        '''这个应用程序是我的公众号【码托邦】的【Flutter从零到上架应用商店】系列文章的示例App，代码以开源，更多介绍请关注我的微信公众号。\n\n此应用程序不会收集您的任何个人信息，所有的历史信息均保存在本地，不会上传，请放心使用。\n\n\n邮箱：memtopia@gmail.com\n网址：garden.memtopia.com
                         ''',
                         style: TextStyle(
                           fontSize: 16,
