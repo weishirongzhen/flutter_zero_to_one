@@ -32,6 +32,8 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        //可通过设置这个选项修改status 文字颜色
+//        brightness: Brightness.dark,
         centerTitle: true,
         title: Text(
           '百草园',
