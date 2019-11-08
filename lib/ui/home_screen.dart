@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:dio/dio.dart';
@@ -77,25 +78,7 @@ class _HomeScreenState extends State<HomeScreen> with WtfBusEventMixin {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              SizedBox(
-                height: 20,
-              ),
-              Container(
-                child: HistoryPage(),
-              ),
-              SizedBox(
-                height: 100,
-              )
-            ],
-          ),
-        ),
-      ),
+      body:  HistoryPage(),
     );
   }
 
