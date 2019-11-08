@@ -33,28 +33,31 @@ class HistoryPage extends StatelessWidget {
                       SizedBox(
                         height: 20,
                       ),
-                      AnimationLimiter(
-                        child: GridView.builder(
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: snapshot.entity.list.length,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            childAspectRatio: 1,
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: AnimationLimiter(
+                          child: GridView.builder(
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: snapshot.entity.list.length,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              childAspectRatio: 1,
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 10,
+                              crossAxisSpacing: 10,
+                            ),
+                            itemBuilder: (context, index) {
+                              return AnimationConfiguration.staggeredGrid(
+                                columnCount: 2,
+                                position: index,
+                                duration: Duration(milliseconds: 400),
+                                child: ScaleAnimation(
+                                  scale: 0.1,
+                                  child: HistoryItemWidget(snapshot.entity.list[index], index),
+                                ),
+                              );
+                            },
                           ),
-                          itemBuilder: (context, index) {
-                            return AnimationConfiguration.staggeredGrid(
-                              columnCount: 2,
-                              position: index,
-                              duration: Duration(milliseconds: 400),
-                              child: ScaleAnimation(
-                                scale: 0.1,
-                                child: HistoryItemWidget(snapshot.entity.list[index], index),
-                              ),
-                            );
-                          },
                         ),
                       ),
                       SizedBox(
