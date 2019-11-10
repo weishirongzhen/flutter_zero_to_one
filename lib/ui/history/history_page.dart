@@ -13,8 +13,9 @@ class HistoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<HistoryNotifier>(
       builder: (context, snapshot, _) {
-        if (snapshot.entity != null) {
+        if (snapshot.entity != null && snapshot.entity.list.isNotEmpty) {
           return Container(
+            height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
               image: DecorationImage(
                   image: FileImage(
@@ -29,6 +30,7 @@ class HistoryPage extends StatelessWidget {
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: SingleChildScrollView(
                   child: Column(
+                    mainAxisSize: MainAxisSize.max,
                     children: <Widget>[
                       SizedBox(
                         height: 20,
@@ -70,7 +72,14 @@ class HistoryPage extends StatelessWidget {
             ),
           );
         } else {
-          return SizedBox();
+          return Container(
+            child: Center(
+              child: Text(
+                '这里空空如也~快去识别吧',
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          );
         }
       },
     );

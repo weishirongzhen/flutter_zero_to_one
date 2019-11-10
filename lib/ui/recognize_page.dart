@@ -105,7 +105,6 @@ class _RecognizeWidgetState extends State<RecognizeWidget> {
         title: Text('识别结果'),
         actions: <Widget>[
           SizedBox(
-            width: 70,
             child: FlatButton(
               child: Text(
                 '重选',
