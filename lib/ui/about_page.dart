@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:package_info/package_info.dart';
+import 'package:share/share.dart';
 
 class AboutPage extends StatelessWidget {
   @override
@@ -8,6 +12,16 @@ class AboutPage extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text('关于'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(FontAwesomeIcons.share),
+            onPressed: () {
+              if (Platform.isIOS) {
+                Share.share("https://apps.apple.com/cn/app/%E6%88%91%E7%9A%84%E7%99%BE%E8%8D%89%E5%9B%AD/id1486070397");
+              }
+            },
+          )
+        ],
       ),
       body: Container(
         width: double.infinity,
