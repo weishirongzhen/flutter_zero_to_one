@@ -26,7 +26,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(builder: (_) => HistoryNotifier()),
       ],
       child: MaterialApp(
-        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.green,
         ),
